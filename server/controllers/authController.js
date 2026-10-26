@@ -55,20 +55,37 @@ exports.loginUser = async (req, res) => {
   if (!isMatch) {
     return res.status(400).json({ error: "Invalid credentials" });
   }
+
   if (!user.isVerified && user.role === 'user') {
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    await OTP.deleteMany({ email, action: 'account_verification' }); // Delete any existing OTPs for this email
-    await OTP.create({ email, otp, expiresAt: new Date(Date.now() + 10 * 60 * 1000) });
-    await sendOTPEmail(email, otp, 'account_verification');
-    return res.status(400).json({ error: "Account not verified. Please check your email for the OTP to verify your account." });
-  }
-  res.json({ message: "Login successful", 
-    _id: user._id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    token: generateToken(user._id, user.role)
-   });
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  await OTP.deleteMany({
+    email,
+    action: 'account_verification'
+  });
+
+  await OTP.create({
+    email,
+    otp,
+    action: 'account_verification',
+    expiresAt: new Date(Date.now() + 10 * 60 * 1000)
+  });
+
+  await sendOTPEmail(email, otp, 'account_verification');
+
+  return res.status(400).json({
+    error: "Account not verified. Please check your email for the OTP to verify your account."
+  });
+}
+
+res.json({
+  message: "Login successful",
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  token: generateToken(user._id, user.role)
+});
 };
 
 exports.verifyOtp = async (req, res) => {

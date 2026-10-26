@@ -54,9 +54,12 @@ const sendOTPEmail = async (userEmail, otp, type) => {
         };
         await transporter.sendMail(mailOptions);
         console.log(`OTP sent to ${userEmail} for ${type}`);
-    } catch (error) {
-        console.error('Error sending OTP email:', error);
-    }
+    }  catch (error) {
+    console.error("EMAIL ERROR CODE:", error.code);
+    console.error("EMAIL ERROR MESSAGE:", error.message);
+    console.error("EMAIL ERROR RESPONSE:", error.response);
+    throw error;
+}
 };
 
 module.exports = { sendBookingEmail, sendOTPEmail };
